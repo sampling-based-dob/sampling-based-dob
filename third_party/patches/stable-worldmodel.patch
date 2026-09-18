@@ -1,0 +1,183 @@
+diff --git a/stable_worldmodel/data/__init__.py b/stable_worldmodel/data/__init__.py
+index bc8f456..57e9fd2 100644
+--- a/stable_worldmodel/data/__init__.py
++++ b/stable_worldmodel/data/__init__.py
+@@ -16,24 +16,7 @@ from .format import (
+ # optional deps are installed.
+ from . import formats as _formats  # noqa: F401
+ 
+-# Re-export concrete readers/writers from their format modules so existing
+-# imports like `from stable_worldmodel.data import LanceDataset` keep working.
+-# Optional formats (hdf5, video) are re-exported only when their extras are
+-# installed; absent ones are simply not bound at module level.
+-from .formats.lance import LanceDataset, LanceWriter
+ from .formats.folder import FolderDataset, FolderWriter, ImageDataset
+-from .formats.lerobot import LeRobotAdapter
+-
+-try:
+-    from .formats.hdf5 import HDF5Dataset, HDF5Writer  # noqa: F401
+-except ImportError:
+-    pass
+-
+-try:
+-    from .formats.video import VideoDataset, VideoWriter  # noqa: F401
+-except ImportError:
+-    pass
+-
+ 
+ __all__ = [
+     'FORMATS',
+@@ -41,9 +24,6 @@ __all__ = [
+     'FolderDataset',
+     'FolderWriter',
+     'ImageDataset',
+-    'LanceDataset',
+-    'LanceWriter',
+-    'LeRobotAdapter',
+     'WRITE_MODES',
+     'Writer',
+     'detect_format',
+@@ -52,3 +32,35 @@ __all__ = [
+     'register_format',
+     'validate_write_mode',
+ ]
++
++# Re-export concrete readers/writers from their format modules so existing
++# imports like `from stable_worldmodel.data import LanceDataset` keep working.
++# Optional formats are re-exported only when their extras are installed; absent
++# or broken optional dependencies are simply not bound at module level.
++try:
++    from .formats.lance import LanceDataset, LanceWriter  # noqa: F401
++
++    __all__ += ['LanceDataset', 'LanceWriter']
++except Exception:
++    pass
++
++try:
++    from .formats.lerobot import LeRobotAdapter  # noqa: F401
++
++    __all__ += ['LeRobotAdapter']
++except Exception:
++    pass
++
++try:
++    from .formats.hdf5 import HDF5Dataset, HDF5Writer  # noqa: F401
++
++    __all__ += ['HDF5Dataset', 'HDF5Writer']
++except ImportError:
++    pass
++
++try:
++    from .formats.video import VideoDataset, VideoWriter  # noqa: F401
++
++    __all__ += ['VideoDataset', 'VideoWriter']
++except ImportError:
++    pass
+diff --git a/stable_worldmodel/data/formats/__init__.py b/stable_worldmodel/data/formats/__init__.py
+index fd24d79..d41f591 100644
+--- a/stable_worldmodel/data/formats/__init__.py
++++ b/stable_worldmodel/data/formats/__init__.py
+@@ -10,19 +10,17 @@ from __future__ import annotations
+ 
+ import logging as _logging
+ 
+-from . import lance  # noqa: F401
+-from . import folder  # noqa: F401
+-from . import lerobot  # noqa: F401
+-
+-
+ def _try_import(modname: str) -> None:
+     try:
+         __import__(f'{__name__}.{modname}')
+-    except ImportError as exc:
++    except Exception as exc:
+         _logging.getLogger(__name__).debug(
+             "format '%s' not registered: %s", modname, exc
+         )
+ 
+ 
++_try_import('lance')
++_try_import('folder')
++_try_import('lerobot')
+ _try_import('hdf5')
+ _try_import('video')
+diff --git a/stable_worldmodel/envs/dmcontrol/reacher.py b/stable_worldmodel/envs/dmcontrol/reacher.py
+index fc3c127..771716a 100644
+--- a/stable_worldmodel/envs/dmcontrol/reacher.py
++++ b/stable_worldmodel/envs/dmcontrol/reacher.py
+@@ -2,7 +2,9 @@ import os
+ import tempfile
+ 
+ import numpy as np
++import mujoco
+ from dm_control import mjcf
++from dm_control.mujoco.wrapper.mjbindings import sizes
+ from dm_control.rl import control
+ from dm_control.suite import reacher
+ from dm_control.suite.wrappers import action_scale
+@@ -28,9 +30,25 @@ _TASK_TARGET_SIZES = {
+ }
+ 
+ 
++def _patch_dm_control_mujoco_field_mismatch():
++    """Drop dm_control index fields missing from the active mujoco binding."""
++    model = mujoco.MjModel.from_xml_string('<mujoco><worldbody/></mujoco>')
++    mjmodel_sizes = sizes.array_sizes.get('mjmodel', {})
++    for field_name in list(mjmodel_sizes.keys()):
++        if not hasattr(model, field_name):
++            mjmodel_sizes.pop(field_name, None)
++
++
+ class ReacherDMControlWrapper(DMControlWrapper):
+     def __init__(
+-        self, task='hard', seed=None, environment_kwargs=None, render_mode=None
++        self,
++        task='hard',
++        seed=None,
++        environment_kwargs=None,
++        render_mode=None,
++        history_size=None,
++        frame_skip=None,
++        **unused_kwargs,
+     ):
+         if task not in _TASKS:
+             raise ValueError(
+@@ -46,6 +64,7 @@ class ReacherDMControlWrapper(DMControlWrapper):
+             model_dir=suite_dir,
+             assets=assets or {},
+         )
++        _patch_dm_control_mujoco_field_mismatch()
+         self.compile_model(seed=seed, environment_kwargs=environment_kwargs)
+         super().__init__(self.env, 'reacher')
+         self.variation_space = swm_spaces.Dict(
+diff --git a/stable_worldmodel/policy.py b/stable_worldmodel/policy.py
+index 84d2539..63c0043 100644
+--- a/stable_worldmodel/policy.py
++++ b/stable_worldmodel/policy.py
+@@ -7,7 +7,14 @@ from collections.abc import Callable
+ import numpy as np
+ import torch
+ from loguru import logger as logging
+-from torchvision import tv_tensors
++
++class _TvTensorsFallback:
++    @staticmethod
++    def Image(x):
++        return x if torch.is_tensor(x) else torch.as_tensor(x)
++
++
++tv_tensors = _TvTensorsFallback()
+ 
+ import stable_worldmodel as swm
+ from stable_worldmodel.solver import Solver
+@@ -175,8 +182,8 @@ class BasePolicy:
+                 if shape is not None:
+                     v = v.reshape(*shape[:2], *v.shape[1:])
+ 
+-            if is_numpy and v.dtype.kind not in 'USO':
+-                v = torch.from_numpy(v)
++            if is_numpy and v.dtype.kind not in 'USOb':
++                v = torch.as_tensor(v)
+ 
+             out[k] = v
+ 

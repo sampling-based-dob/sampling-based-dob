@@ -1,0 +1,10 @@
+include README_zh-CN.md THIRD_PARTY_NOTICES.md VALIDATION.md
+include .gitignore
+recursive-include .github *.yml
+recursive-include scripts *.py
+recursive-include docs *.md *.png
+recursive-include third_party *.md *.patch
+recursive-include tests *.py
+recursive-include sdob/examples *.py
+recursive-exclude third_party/le-wm *
+recursive-exclude third_party/stable-worldmodel *

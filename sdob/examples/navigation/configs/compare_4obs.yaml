@@ -1,0 +1,24 @@
+output_dir: outputs/navigation/compare/4obs
+scenario: four
+steps: 500
+dt: 0.05
+horizon: 30
+num_samples: 500
+seed: 42
+device: cpu
+skip_gif: false
+gif_skip: 2
+max_gif_frames: 200
+goal_radius: 0.35
+disturbance: constant_input
+slip_amplitude: 0.0
+slip_frequency: 0.35
+slip_phase: 0.0
+input_disturbance_bias: [0.12, 0.24]
+input_disturbance_amplitude: [0.08, 0.16]
+input_disturbance_frequency: 0.08
+input_disturbance_phase: [0.0, 1.5708]
+perception_radius: 3.0
+sdob_radius: 2.4
+lookahead_dist: 3.0
+num_cost_queries: 500

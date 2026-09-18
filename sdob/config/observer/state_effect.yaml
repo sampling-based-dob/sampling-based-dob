@@ -1,0 +1,11 @@
+target: sdob.observer.StateEffectObserver
+disturbance_dim: 1
+num_samples: 256
+disturbance_min: [-1.0]
+disturbance_max: [1.0]
+prediction_weight: [1.0]
+regularization_weight: [0.0]
+temperature: 0.05
+filter_alpha: 0.5
+device: cpu
+seed: 0

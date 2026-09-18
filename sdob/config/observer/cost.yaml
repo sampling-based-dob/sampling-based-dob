@@ -1,0 +1,8 @@
+target: sdob.observer.CostDisturbanceObserver
+dt: 0.05
+max_displacement: [0.15, 0.15]
+candidate_steps: 9
+neighborhood_radius: 0.5
+interpolation_bandwidth: 0.5
+displacement_penalty: 0.01
+device: cpu

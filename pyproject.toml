@@ -1,0 +1,48 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sampling-based-dob"
+version = "0.1.0"
+description = "Sampling-Based Disturbance Observer: navigation, pendulum, and frozen LeWM Reacher"
+readme = "README.md"
+requires-python = ">=3.10,<3.12"
+license = {file = "LICENSE"}
+dependencies = [
+  "torch>=2.1", "numpy>=1.24,<2", "matplotlib>=3.7", "pandas>=2.0",
+  "PyYAML>=6", "pillow>=10", "imageio[ffmpeg]>=2.31",
+  "gymnasium[classic-control]>=0.29,<2",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8", "build"]
+reacher = [
+  "transformers==4.56.2", "huggingface-hub>=0.34,<1", "einops>=0.8",
+  "dm-control>=1.0.28", "mujoco>=3.2", "loguru", "tabulate", "tqdm",
+  "typer", "rich", "opencv-python<4.12",
+]
+
+[project.urls]
+Homepage = "https://sampling-based-dob.github.io/"
+
+[project.scripts]
+sdob-check = "sdob.diagnostics:main"
+sdob-navigation = "sdob.examples.navigation.run_compare:main"
+sdob-pendulum = "sdob.examples.pendulum.run_compare:main"
+sdob-reacher = "sdob.examples.reacher.run_compare:main"
+sdob-download-reacher = "sdob.examples.reacher.download_model:main"
+
+[tool.setuptools]
+include-package-data = false
+
+[tool.setuptools.packages.find]
+include = ["sdob*"]
+exclude = ["*.tests", "*.tests.*"]
+namespaces = false
+
+[tool.setuptools.package-data]
+sdob = ["config/**/*.yaml", "examples/*/configs/*.yaml"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests", "sdob/examples/pendulum/tests", "sdob/examples/navigation/tests"]
