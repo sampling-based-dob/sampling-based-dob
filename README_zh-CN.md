@@ -1,6 +1,6 @@
 <h1 align="center">SDOB</h1>
-<p align="center"><strong>Sampling-Based Disturbance Observer · 基于采样的扰动观测器</strong></p>
-<p align="center">从传统模型到世界模型的 Sim-to-Real 失配补偿</p>
+<p align="center"><strong>Tackling Sim-to-Real Mismatch in World Models Through A Sampling-Based Disturbance Observer</strong></p>
+<p align="center">通过基于采样的扰动观测器应对世界模型中的 Sim-to-Real 失配</p>
 
 <p align="center">
   <a href="https://sampling-based-dob.github.io/">项目主页</a> ·

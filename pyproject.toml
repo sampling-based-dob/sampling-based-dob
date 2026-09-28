@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "sampling-based-dob"
 version = "0.1.0"
-description = "Sampling-Based Disturbance Observer: navigation, pendulum, and frozen LeWM Reacher"
+description = "Tackling Sim-to-Real Mismatch in World Models Through A Sampling-Based Disturbance Observer"
 readme = "README.md"
 requires-python = ">=3.10,<3.12"
 license = {file = "LICENSE"}

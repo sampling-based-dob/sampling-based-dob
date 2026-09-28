@@ -1,6 +1,5 @@
 <h1 align="center">SDOB</h1>
-<p align="center"><strong>Sampling-Based Disturbance Observer</strong></p>
-<p align="center">Compensation of Sim-to-Real Mismatch<br>from Traditional Models to World Models</p>
+<p align="center"><strong>Tackling Sim-to-Real Mismatch in World Models Through A Sampling-Based Disturbance Observer</strong></p>
 
 <p align="center">
   <a href="https://sampling-based-dob.github.io/">Project page</a> ·
