@@ -5,6 +5,7 @@
 <p align="center">
   <a href="https://sampling-based-dob.github.io/">项目主页</a> ·
   <a href="https://sampling-based-dob.github.io/static/papers/sdob-paper.pdf">论文</a> ·
+  <a href="https://youtu.be/ovb4moAlaC8">演示视频</a> ·
   <a href="README.md">English</a> ·
   <a href="LICENSE">MIT 许可证</a>
 </p>
