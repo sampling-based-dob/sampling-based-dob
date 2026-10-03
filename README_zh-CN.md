@@ -1,5 +1,5 @@
 <h1 align="center">SDOB</h1>
-<p align="center"><strong>Tackling Sim-to-Real Mismatch in World Models Through A Sampling-Based Disturbance Observer</strong></p>
+<p align="center"><strong>Tackling Sim-to-Real Mismatch Through Sampling-Based Disturbance Observers: From Analytical Models to Learned World Models</strong></p>
 <p align="center">通过基于采样的扰动观测器应对世界模型中的 Sim-to-Real 失配</p>
 
 <p align="center">
